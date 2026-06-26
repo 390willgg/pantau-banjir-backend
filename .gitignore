@@ -1,0 +1,17 @@
+node_modules/
+dist/
+coverage/
+
+# Logs
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Firebase credentials (never commit)
+credentials/firebase-admin.local.json
+
+# Prisma
+prisma/migrations/migration_lock.toml

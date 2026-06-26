@@ -1,0 +1,148 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum FloodSeverity {
+  NORMAL
+  WARNING
+  DANGER
+  STALE
+}
+
+enum AlertStatus {
+  NEW
+  ACTIVE
+  ACKNOWLEDGED
+  RESOLVED
+}
+
+model Area {
+  id            String     @id
+  name          String
+  northLatitude Float
+  southLatitude Float
+  eastLongitude Float
+  westLongitude Float
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  locations     Location[]
+  reports       Report[]
+  alerts        Alert[]
+}
+
+model Location {
+  id                     String          @id
+  name                   String
+  areaId                 String
+  latitude               Float?
+  longitude              Float?
+  maxCapacityMeters      Float           @default(0.25)
+  warningThreshold       Float           @default(0.10)
+  dangerThreshold        Float           @default(0.15)
+  isActive               Boolean         @default(true)
+  currentSeverity        FloodSeverity   @default(NORMAL)
+  currentWaterLevel      Float           @default(0)
+  currentFlowRate        Float           @default(0)
+  lastReadingAt          DateTime?
+  invalidCoordinateCount Int             @default(0)
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+  area                   Area            @relation(fields: [areaId], references: [id])
+  devices                Device[]
+  readings               SensorReading[]
+  alerts                 Alert[]
+}
+
+model Device {
+  id                 String    @id
+  claimCode          String    @unique
+  label              String?
+  secret             String?
+  assignedLocationId String?
+  lastSeenAt         DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  assignedLocation   Location? @relation(fields: [assignedLocationId], references: [id])
+
+  @@index([assignedLocationId])
+  @@index([lastSeenAt(sort: Desc)])
+}
+
+model SensorReading {
+  id               String        @id @default(cuid())
+  locationId       String
+  measuredAt       DateTime
+  waterLevelMeters Float
+  flowRateMs       Float
+  severity         FloodSeverity
+  dedupeKey        String        @unique
+  rawPayload       Json?
+  createdAt        DateTime      @default(now())
+  location         Location      @relation(fields: [locationId], references: [id])
+  alerts           Alert[]
+
+  @@index([locationId, measuredAt(sort: Desc)])
+  @@index([measuredAt(sort: Desc)])
+}
+
+model Alert {
+  id              String         @id @default(cuid())
+  locationId      String
+  areaId          String
+  sourceReadingId String?
+  title           String
+  message         String
+  severity        FloodSeverity
+  status          AlertStatus
+  triggeredAt     DateTime
+  acknowledgedAt  DateTime?
+  resolvedAt      DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  area            Area           @relation(fields: [areaId], references: [id])
+  location        Location       @relation(fields: [locationId], references: [id])
+  sourceReading   SensorReading? @relation(fields: [sourceReadingId], references: [id])
+
+  @@index([locationId, status])
+  @@index([updatedAt(sort: Desc), triggeredAt(sort: Desc)])
+  @@index([triggeredAt(sort: Desc)])
+  @@index([acknowledgedAt(sort: Desc)])
+  @@index([resolvedAt(sort: Desc)])
+}
+
+model Report {
+  id           String         @id @default(cuid())
+  areaId       String?
+  reporterName String?
+  message      String
+  latitude     Float?
+  longitude    Float?
+  severity     FloodSeverity?
+  createdAt    DateTime       @default(now())
+  area         Area?          @relation(fields: [areaId], references: [id])
+
+  @@index([createdAt(sort: Desc)])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  entityType String
+  entityId   String
+  payload    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, action, createdAt(sort: Desc)])
+}
+
+model NotificationSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  fcmToken  String   @unique
+  areaId    String?
+  createdAt DateTime @default(now())
+}
