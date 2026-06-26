@@ -14,5 +14,7 @@ COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma
 COPY prisma.config.ts ./
+COPY entrypoint.sh ./
+RUN chmod +x entrypoint.sh
 EXPOSE 3000
-CMD ["sh", "-c", "npx prisma db push && node dist/src/main.js"]
+CMD ["./entrypoint.sh"]
