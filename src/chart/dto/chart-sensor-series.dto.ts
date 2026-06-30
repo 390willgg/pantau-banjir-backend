@@ -17,6 +17,9 @@ export class ChartSensorSeriesDto {
   @ApiProperty()
   currentVolume: number;
 
+  @ApiProperty({ nullable: true })
+  lastReadingAt: string | null;
+
   @ApiProperty({ type: [ChartPointDto] })
   waterLevelData: ChartPointDto[];
 

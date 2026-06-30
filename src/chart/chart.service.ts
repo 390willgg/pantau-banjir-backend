@@ -81,26 +81,14 @@ export class ChartService {
     return locations.map((location) => {
       const readings =
         bucket === "raw" ? [...location.readings].reverse() : location.readings;
-      const fallbackMeasuredAt = location.lastReadingAt ?? location.updatedAt;
       const effectiveReadings = this.buildChartReadings(
         readings,
         range,
         bucket,
       );
-      const fallbackReadings =
-        readings.length > 0
-          ? effectiveReadings
-          : [
-              {
-                label: this.formatPointLabel(fallbackMeasuredAt, range, bucket),
-                measuredAt: fallbackMeasuredAt,
-                waterLevelMeters: location.currentWaterLevel,
-                flowRateMs: location.currentFlowRate,
-                volumeM3: location.currentWaterLevel * 325,
-              },
-            ];
 
       const latestRawReading = readings.at(-1);
+      const fallbackMeasuredAt = location.lastReadingAt ?? location.updatedAt;
       const latest = latestRawReading ?? {
         measuredAt: fallbackMeasuredAt,
         waterLevelMeters: location.currentWaterLevel,
@@ -120,21 +108,22 @@ export class ChartService {
         currentWaterLevel,
         currentFlowRate,
         currentVolume,
-        waterLevelData: fallbackReadings.map((reading) => ({
+        lastReadingAt: location.lastReadingAt?.toISOString() ?? null,
+        waterLevelData: effectiveReadings.map((reading) => ({
           label: reading.label,
           value: reading.waterLevelMeters,
           bucketStart: reading.bucketStart?.toISOString(),
           bucketEnd: reading.bucketEnd?.toISOString(),
           details: reading.waterLevelDetails,
         })),
-        flowRateData: fallbackReadings.map((reading) => ({
+        flowRateData: effectiveReadings.map((reading) => ({
           label: reading.label,
           value: reading.flowRateMs,
           bucketStart: reading.bucketStart?.toISOString(),
           bucketEnd: reading.bucketEnd?.toISOString(),
           details: reading.flowRateDetails,
         })),
-        volumeData: fallbackReadings.map((reading) => ({
+        volumeData: effectiveReadings.map((reading) => ({
           label: reading.label,
           value: reading.volumeM3,
           bucketStart: reading.bucketStart?.toISOString(),
