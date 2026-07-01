@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
-import { ApiBody, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
+import { FirebaseAuthGuard } from '../auth/firebase-auth.guard';
 import { LocationsService } from './locations.service';
 import { LocationStatusDto } from './dto/location-status.dto';
 import { InstallLocationDto } from './dto/install-location.dto';
@@ -17,6 +18,8 @@ export class LocationsController {
   }
 
   @Post()
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth()
   @ApiBody({ type: CreateLocationDto })
   @ApiCreatedResponse({ type: LocationStatusDto })
   createLocation(@Body() dto: CreateLocationDto) {
@@ -31,6 +34,8 @@ export class LocationsController {
   }
 
   @Patch(':id/install')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth()
   @ApiParam({ name: 'id' })
   @ApiBody({ type: InstallLocationDto })
   @ApiOkResponse({ type: LocationStatusDto })
@@ -42,6 +47,8 @@ export class LocationsController {
   }
 
   @Delete(':id')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth()
   @ApiParam({ name: 'id' })
   @ApiOkResponse({ schema: { example: { id: 'FW-0001', deleted: true } } })
   deleteLocation(@Param('id') id: string) {
