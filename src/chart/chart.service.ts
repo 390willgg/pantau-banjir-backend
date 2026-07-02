@@ -15,33 +15,30 @@ export class ChartService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getArchiveMonths() {
-    const readings = await this.prisma.sensorReading.findMany({
-      orderBy: { measuredAt: "desc" },
-      select: { measuredAt: true },
+    const rows = await this.prisma.$queryRaw<
+      { month: Date; count: bigint }[]
+    >`
+      SELECT
+        DATE_TRUNC('month', "measuredAt") AS month,
+        COUNT(*) AS count
+      FROM "SensorReading"
+      GROUP BY month
+      ORDER BY month DESC
+    `;
+
+    return rows.map((row) => {
+      const month = new Date(row.month);
+      return {
+        value: this.formatArchiveMonthValue(month),
+        label: this.formatArchiveMonthLabel(month),
+        from: month.toISOString(),
+        to: new Date(
+          month.getFullYear(),
+          month.getMonth() + 1,
+        ).toISOString(),
+        readingCount: Number(row.count),
+      };
     });
-    const counts = new Map<string, { month: Date; count: number }>();
-
-    for (const reading of readings) {
-      const month = new Date(
-        reading.measuredAt.getFullYear(),
-        reading.measuredAt.getMonth(),
-      );
-      const key = this.formatArchiveMonthValue(month);
-      const existing = counts.get(key) ?? { month, count: 0 };
-      existing.count += 1;
-      counts.set(key, existing);
-    }
-
-    return [...counts.entries()].map(([value, entry]) => ({
-      value,
-      label: this.formatArchiveMonthLabel(entry.month),
-      from: entry.month.toISOString(),
-      to: new Date(
-        entry.month.getFullYear(),
-        entry.month.getMonth() + 1,
-      ).toISOString(),
-      readingCount: entry.count,
-    }));
   }
 
   async getSensorSeries(

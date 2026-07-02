@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post, Request, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
 import { DecodedIdToken } from 'firebase-admin/auth';
 import { FirebaseAuthGuard } from '../auth/firebase-auth.guard';
@@ -19,8 +19,12 @@ export class NotificationsController {
     @Body() dto: UpsertNotificationSubscriptionDto,
     @Request() request: { user?: DecodedIdToken },
   ) {
+    const userId = request.user?.uid;
+    if (!userId) {
+      throw new UnauthorizedException('Authentication required for notification subscriptions.');
+    }
     return this.notificationsService.upsertSubscription({
-      userId: request.user?.uid ?? 'local-development-user',
+      userId,
       fcmToken: dto.fcmToken,
       areaId: dto.areaId,
     });

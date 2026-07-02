@@ -1,6 +1,5 @@
-import { Controller, Get, Query, UseGuards } from "@nestjs/common";
-import { ApiBearerAuth, ApiOkResponse, ApiQuery, ApiTags } from "@nestjs/swagger";
-import { FirebaseAuthGuard } from "../auth/firebase-auth.guard";
+import { Controller, Get, Query } from "@nestjs/common";
+import { ApiOkResponse, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ChartService } from "./chart.service";
 import {
   ChartQueryDto,
@@ -16,8 +15,6 @@ export class ChartController {
   constructor(private readonly chartService: ChartService) {}
 
   @Get("archive-months")
-  @UseGuards(FirebaseAuthGuard)
-  @ApiBearerAuth()
   @ApiOkResponse({
     description: "Daftar bulan arsip yang memiliki data sensor.",
   })
@@ -26,8 +23,6 @@ export class ChartController {
   }
 
   @Get("sensor-series")
-  @UseGuards(FirebaseAuthGuard)
-  @ApiBearerAuth()
   @ApiQuery({
     name: "limit",
     required: false,

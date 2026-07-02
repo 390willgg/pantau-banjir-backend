@@ -14,7 +14,7 @@ export interface ClassificationInput {
 export class FloodClassificationService {
   classify(input: ClassificationInput): FloodSeverity {
     const now = input.now ?? new Date();
-    const ageMinutes = Math.abs(now.getTime() - input.measuredAt.getTime()) / 60000;
+    const ageMinutes = (now.getTime() - input.measuredAt.getTime()) / 60000;
 
     if (ageMinutes >= input.staleReadingMinutes) {
       return FloodSeverity.STALE;
