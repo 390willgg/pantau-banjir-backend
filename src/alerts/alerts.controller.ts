@@ -11,12 +11,16 @@ export class AlertsController {
   constructor(private readonly alertsService: AlertsService) {}
 
   @Get()
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth()
   @ApiOkResponse({ type: AlertResponseDto, isArray: true })
   listAlerts() {
     return this.alertsService.listActiveAlerts();
   }
 
   @Get(':id')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth()
   @ApiParam({ name: 'id' })
   @ApiOkResponse({ type: AlertResponseDto })
   getAlert(@Param('id') id: string) {

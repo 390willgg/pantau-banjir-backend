@@ -12,6 +12,8 @@ export class LocationsController {
   constructor(private readonly locationsService: LocationsService) {}
 
   @Get()
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth()
   @ApiOkResponse({ type: LocationStatusDto, isArray: true })
   listLocations() {
     return this.locationsService.listLocations();
@@ -27,6 +29,8 @@ export class LocationsController {
   }
 
   @Get(':id/status')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth()
   @ApiParam({ name: 'id' })
   @ApiOkResponse({ type: LocationStatusDto })
   getLocationStatus(@Param('id') id: string) {

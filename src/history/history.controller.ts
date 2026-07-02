@@ -1,5 +1,6 @@
-import { Controller, Get, Query } from "@nestjs/common";
-import { ApiOkResponse, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { Controller, Get, Query, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiOkResponse, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { FirebaseAuthGuard } from "../auth/firebase-auth.guard";
 import { HistoryService } from "./history.service";
 import { HistoryEntryResponseDto } from "./dto/history-entry-response.dto";
 import {
@@ -16,6 +17,8 @@ export class HistoryController {
   constructor(private readonly historyService: HistoryService) {}
 
   @Get()
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth()
   @ApiQuery({
     name: "limit",
     required: false,
