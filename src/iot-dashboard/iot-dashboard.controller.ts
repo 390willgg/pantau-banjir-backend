@@ -1,5 +1,6 @@
-import { Controller, Get, Header, Query } from "@nestjs/common";
-import { ApiOkResponse, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { FirebaseAuthGuard } from "../auth/firebase-auth.guard";
+import { Controller, Get, Header, Query, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiOkResponse, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { IotDashboardService } from "./iot-dashboard.service";
 
 @ApiTags("iot-dashboard")
@@ -8,6 +9,8 @@ export class IotDashboardController {
   constructor(private readonly iotDashboardService: IotDashboardService) {}
 
   @Get()
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth()
   @Header("content-type", "text/html; charset=utf-8")
   getDashboard() {
     return `<!doctype html>
@@ -212,6 +215,8 @@ export class IotDashboardController {
   }
 
   @Get("readings")
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth()
   @ApiQuery({
     name: "limit",
     required: false,

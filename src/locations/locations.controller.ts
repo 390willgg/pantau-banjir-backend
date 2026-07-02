@@ -1,3 +1,4 @@
+import { FirebaseAuthGuard } from '../auth/firebase-auth.guard';
 import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOkResponse, ApiParam, ApiTags } from '@nestjs/swagger';
 import { FirebaseAuthGuard } from '../auth/firebase-auth.guard';
@@ -12,6 +13,8 @@ export class LocationsController {
   constructor(private readonly locationsService: LocationsService) {}
 
   @Get()
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth()
   @ApiOkResponse({ type: LocationStatusDto, isArray: true })
   listLocations() {
     return this.locationsService.listLocations();
@@ -27,6 +30,8 @@ export class LocationsController {
   }
 
   @Get(':id/status')
+  @UseGuards(FirebaseAuthGuard)
+  @ApiBearerAuth()
   @ApiParam({ name: 'id' })
   @ApiOkResponse({ type: LocationStatusDto })
   getLocationStatus(@Param('id') id: string) {

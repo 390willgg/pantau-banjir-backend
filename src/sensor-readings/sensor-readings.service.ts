@@ -1,5 +1,5 @@
 import { Prisma } from "@prisma/client";
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { FloodSeverity } from "../common/enums/flood-severity.enum";
 import { toPrismaSeverity } from "../common/prisma-enum.mapper";
 import { FloodClassificationService } from "../domain/flood-classification.service";
@@ -23,6 +23,12 @@ export class SensorReadingsService {
   async ingest(
     dto: IngestSensorReadingDto,
   ): Promise<IngestSensorReadingResponseDto> {
+    if (!dto.locationId && !dto.deviceId) {
+      throw new BadRequestException(
+        'Either locationId or deviceId must be provided.',
+      );
+    }
+
     const locationId =
       dto.locationId ??
       (await this.devicesService.resolveAssignedLocationId(dto.deviceId!));
